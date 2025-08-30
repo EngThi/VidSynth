@@ -31,6 +31,8 @@ def assemble_video(
     os.makedirs(temp_dir, exist_ok=True)
 
     resolution = video_settings.get("resolution", "1920x1080")
+    # FFmpeg filters use ':' as a separator for resolution, not 'x'.
+    ffmpeg_resolution = resolution.replace('x', ':')
     image_duration = video_settings.get("image_duration_seconds", 5)
     video_format = video_settings.get("format", "mp4")
     final_video_path = os.path.join(output_dir, f"{script_data.get('titulo', 'video')}_{timestamp}.{video_format}")
@@ -42,7 +44,7 @@ def assemble_video(
         clip_output_path = os.path.join(temp_dir, f"clip_{i}.mp4")
         command = [
             'ffmpeg', '-y', '-loop', '1', '-i', img_path,
-            '-vf', f"scale={resolution}:force_original_aspect_ratio=decrease,pad={resolution}:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p",
+            '-vf', f"scale={ffmpeg_resolution}:force_original_aspect_ratio=decrease,pad={ffmpeg_resolution}:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p",
             '-c:v', 'libx264', '-t', str(image_duration), '-r', '25',
             clip_output_path
         ]
@@ -80,8 +82,9 @@ def assemble_video(
     ]
 
     # Mapeamentos de stream e filtros complexos
-    map_video = "[0:v]"
-    map_audio = "[1:a]"
+    # Default to direct stream mapping. Labels ([...]) are only used with -filter_complex.
+    map_video = "0:v"
+    map_audio = "1:a"
     complex_filter = []
 
     # Verificar música de fundo

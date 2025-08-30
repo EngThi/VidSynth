@@ -26,6 +26,10 @@ def main():
         video_settings = config.get("video_settings", {})
         api_keys = config.get("api_keys", {})
 
+        # Garantir que os diretórios de saída existam
+        os.makedirs(paths.get("output_videos"), exist_ok=True)
+        os.makedirs(paths.get("output_logs"), exist_ok=True)
+
         # 2. Obter Tema do Usuário
         args = get_args()
         theme = args.tema

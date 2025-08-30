@@ -1,7 +1,7 @@
 {
   "api_keys": {
-    "GEMINI_API_KEY": "SUA_CHAVE_AQUI",
-    "PEXELS_API_KEY": "SUA_CHAVE_AQUI",
+    "GEMINI_API_KEY": "AIzaSyDp6UshwV2FmvQABKeG-V0jUGNwR_OazKo",
+    "PEXELS_API_KEY": "UHfr0bGlbLZUM2qFudbXrIvULxn9uSE72YeM8uuKuNaceqWenKVNIQ2p",
     "TTS_API_KEY": "SUA_CHAVE_AQUI"
   },
   "paths": {

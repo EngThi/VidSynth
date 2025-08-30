@@ -33,7 +33,7 @@ def generate_script(theme: str, api_key: str) -> Dict[str, Any]:
 
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
         prompt = f"""
         Sua tarefa é atuar como um roteirista para vídeos curtos do YouTube.
