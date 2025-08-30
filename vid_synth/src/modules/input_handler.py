@@ -1,23 +1,20 @@
 import argparse
 
-def get_args():
+def get_user_input():
     """
-    Processa e retorna os argumentos da linha de comando.
+    Configura e processa os argumentos da linha de comando para obter o tema do vídeo.
 
     Returns:
-        argparse.Namespace: Um objeto contendo os argumentos passados.
-                            Atualmente, retorna o 'tema' do vídeo.
+        argparse.Namespace: Um objeto contendo os argumentos processados.
+                            Ex: args.tema
     """
-    parser = argparse.ArgumentParser(
-        description="VidSynth - Pipeline de Síntese de Vídeo Automatizado."
-    )
+    parser = argparse.ArgumentParser(description="Automatiza a criação de vídeos para o YouTube.")
     parser.add_argument(
         "--tema",
         type=str,
         required=True,
-        help="O tema principal para a criação do vídeo."
+        help="O tema central do vídeo a ser criado."
     )
-    # Futuramente, outros argumentos como --qualidade, --formato, etc. podem ser adicionados aqui.
 
     args = parser.parse_args()
     return args
