@@ -1,6 +1,7 @@
-# Importa a função que acabamos de criar e outras bibliotecas
+# Importa as funções que precisamos
 import sys
 from src.utils.config_loader import load_config
+from src.modules.input_handler import get_user_input # <--- NOVA IMPORTAÇÃO
 
 def main():
     """
@@ -12,10 +13,17 @@ def main():
     try:
         config = load_config()
         print("✅ Configuração carregada com sucesso.")
-        # Opcional: imprimir uma parte da config para teste
-        # print(f"   - Caminho de saída dos vídeos: {config['paths']['output_videos']}")
     except (FileNotFoundError, KeyError) as e:
         print(f"❌ Erro crítico ao carregar configuração: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    # 2. Obter input do usuário  # <--- NOVO BLOCO
+    try:
+        args = get_user_input()
+        tema_do_video = args.tema
+        print(f"✅ Tema recebido: '{tema_do_video}'")
+    except Exception as e:
+        print(f"❌ Erro ao processar argumentos de entrada: {e}", file=sys.stderr)
         sys.exit(1)
 
     print("-" * 30)
