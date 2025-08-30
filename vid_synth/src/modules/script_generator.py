@@ -1,97 +1,74 @@
-import json
-import re
-from typing import Dict, Any
 import google.generativeai as genai
-from src.utils.logger_config import logger
+import json
 
-def clean_json_response(response_text: str) -> str:
+class ScriptGenerator:
     """
-    Limpa a resposta da IA para extrair apenas o bloco de código JSON.
-    Remove ```json ... ``` e outros textos.
+    Usa a API do Google Gemini para gerar roteiros de vídeo estruturados.
     """
-    # Usa uma expressão regular para encontrar o conteúdo dentro de ```json ... ```
-    match = re.search(r"```json\s*([\s\S]*?)\s*```", response_text)
-    if match:
-        return match.group(1).strip()
+    def __init__(self, api_key):
+        """
+        Inicializa o cliente da API do Gemini.
 
-    # Se não encontrar o bloco, assume que a resposta pode ser o JSON diretamente
-    return response_text.strip()
-
-def generate_script(theme: str, api_key: str) -> Dict[str, Any]:
-    """
-    Gera um roteiro de vídeo estruturado usando a API do Gemini.
-
-    Args:
-        theme (str): O tema para o roteiro do vídeo.
-        api_key (str): A chave da API para autenticação no serviço do Gemini.
-
-    Returns:
-        Dict[str, Any]: Um dicionário estruturado contendo o roteiro.
-                        Retorna None em caso de falha.
-    """
-    logger.info(f"Gerando roteiro via API do Gemini para o tema: '{theme}'")
-
-    try:
+        Args:
+            api_key (str): A chave da API do Google.
+        """
+        if not api_key:
+            raise ValueError("API Key do Gemini não pode ser vazia.")
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
+    def generate_script(self, theme):
+        """
+        Gera um roteiro de vídeo completo com base em um tema.
+
+        Args:
+            theme (str): O tema do vídeo.
+
+        Returns:
+            dict: Um dicionário Python contendo o roteiro estruturado.
+        """
+        # Prompt otimizado para pedir um JSON estruturado como resposta
         prompt = f"""
-        Sua tarefa é atuar como um roteirista para vídeos curtos do YouTube.
-        Crie um roteiro conciso para um vídeo sobre o tema: "{theme}".
+        Você é um roteirista especialista para vídeos do YouTube.
+        Sua tarefa é criar um roteiro curto e cativante sobre o tema: "{theme}".
 
-        O roteiro deve ser dividido em 3 a 5 cenas.
-        Para cada cena, você deve fornecer:
-        1.  'cena': O número da cena (começando em 1).
-        2.  'narracao': Um texto curto e envolvente para a narração da cena (máximo de 2 frases).
-        3.  'prompt_imagem': Uma descrição detalhada para uma IA de geração de imagem (como Imagen ou Midjourney) criar um visual para a cena. Seja descritivo e visual.
-
-        Além das cenas, forneça um 'titulo' geral para o vídeo.
-
-        FORMATE SUA RESPOSTA ESTRITAMENTE COMO UM OBJETO JSON, sem nenhum texto ou formatação adicional fora do JSON.
-        O JSON deve ter a seguinte estrutura:
+        Por favor, formate sua resposta EXCLUSIVAMENTE como um objeto JSON válido,
+        seguindo esta estrutura:
         {{
-          "titulo": "Seu Título Aqui",
-          "cenas": [
+          "video_title": "Um título criativo e chamativo para o vídeo",
+          "scenes": [
             {{
-              "cena": 1,
-              "narracao": "Texto da narração da cena 1.",
-              "prompt_imagem": "Descrição da imagem para a cena 1."
+              "scene_number": 1,
+              "narration_text": "Texto da narração para a primeira cena. Comece com um gancho forte.",
+              "image_prompt": "Uma descrição detalhada em inglês para uma IA de imagem (como Imagen ou Midjourney) criar um visual para esta cena."
             }},
-            ... (outras cenas)
+            {{
+              "scene_number": 2,
+              "narration_text": "Desenvolvimento do tópico. Apresente um fato interessante.",
+              "image_prompt": "Descrição da imagem para a segunda cena."
+            }},
+            {{
+              "scene_number": 3,
+              "narration_text": "Mais um fato ou aprofundamento do tema.",
+              "image_prompt": "Descrição da imagem para a terceira cena."
+            }},
+            {{
+              "scene_number": 4,
+              "narration_text": "Conclusão e uma chamada para ação (call to action), como 'inscreva-se no canal'.",
+              "image_prompt": "Uma imagem impactante para a conclusão do vídeo."
+            }}
           ]
         }}
+
+        Não adicione nenhum texto ou formatação antes ou depois do objeto JSON.
         """
 
-        response = model.generate_content(prompt)
-
-        logger.info("Resposta recebida da API do Gemini. Processando...")
-
-        cleaned_response = clean_json_response(response.text)
-
-        script_data = json.loads(cleaned_response)
-
-        # Validação da estrutura do JSON recebido
-        if "titulo" not in script_data or "cenas" not in script_data:
-            logger.error("O JSON recebido da API não possui a estrutura esperada.")
+        try:
+            response = self.model.generate_content(prompt)
+            # Limpa a resposta para garantir que seja um JSON válido
+            cleaned_response = response.text.strip().replace("```json", "").replace("```", "")
+            script_data = json.loads(cleaned_response)
+            return script_data
+        except Exception as e:
+            print(f"❌ Erro ao gerar roteiro ou decodificar JSON: {e}")
             return None
-
-        logger.info("Roteiro gerado e validado com sucesso!")
-        return script_data
-
-    except Exception as e:
-        logger.error(f"Falha ao gerar o roteiro com a API do Gemini: {e}", exc_info=True)
-        # Retornar o mock script pode ser uma alternativa em caso de falha
-        # return generate_mock_script(theme)
-        return None
-
-def generate_mock_script(theme: str) -> Dict[str, Any]:
-    """Função de fallback que gera um roteiro de exemplo."""
-    logger.warning("Usando roteiro de exemplo (mock) devido a uma falha na API.")
-    return {
-        "titulo": f"Um Olhar Sobre {theme}",
-        "cenas": [
-            {"cena": 1, "narracao": f"Explorando os conceitos de {theme}.", "prompt_imagem": f"abstração de {theme}"},
-            {"cena": 2, "narracao": "O impacto do tema hoje.", "prompt_imagem": f"tecnologia de {theme}"},
-            {"cena": 3, "narracao": "O futuro de {theme}.", "prompt_imagem": f"futuro com {theme}"}
-        ]
-    }
