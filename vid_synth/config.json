@@ -1,0 +1,21 @@
+{
+  "api_keys": {
+    "GEMINI_API_KEY": "AIzaSyDp6UshwV2FmvQABKeG-V0jUGNwR_OazKo",
+    "PEXELS_API_KEY": "UHfr0bGlbLZUM2qFudbXrIvULxn9uSE72YeM8uuKuNaceqWenKVNIQ2p",
+    "TTS_API_KEY": "SUA_CHAVE_AQUI"
+  },
+  "paths": {
+    "output_videos": "output/videos/",
+    "output_logs": "output/logs/",
+    "assets": "assets/"
+  },
+  "video_settings": {
+    "resolution": "1920x1080",
+    "format": "mp4",
+    "image_duration_seconds": 5
+  },
+  "ai_studio_credentials": {
+    "email": "seu_email_aqui",
+    "password": "sua_senha_aqui"
+  }
+}
